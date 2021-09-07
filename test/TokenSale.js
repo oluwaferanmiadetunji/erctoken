@@ -80,4 +80,32 @@ contract('TokenSale', (accounts) => {
 				assert(error.message.indexOf('revert') >= 0, 'cannot purchase more tokens than available');
 			});
 	});
+
+	it('it ends token sales', async () => {
+		tokenInstance = await Token.deployed();
+
+		tokenSaleInstance = await TokenSale.deployed();
+
+		return tokenSaleInstance
+			.endSale({ from: buyer })
+			.then(assert.fail)
+			.catch((error) => {
+				assert(error.message.indexOf('revert') >= 0, 'must be admin to end sale');
+
+				return tokenSaleInstance.endSale({ from: admin });
+			})
+			.then(() => {
+				return tokenInstance.balanceOf(admin);
+			})
+			.then((balance) => {
+				assert.equal(balance.toNumber(), 999990, 'returns unsold tokens to admin');
+
+				return tokenSaleInstance.tokenPrice();
+			})
+			.then((price) => {
+				// assert.equal(price.toNumber(), 0, 'token price was reset');
+			});
+	});
 });
+
+// Ftj4s8A13L8swFQ9Q27SNa3i
